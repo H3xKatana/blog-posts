@@ -5,6 +5,8 @@
 **Reading time:** 15 min
 **Tags:** kubernetes, etcd, performance, ops, CKA
 
+![Kubernetes Cluster Architecture — from kubectl to control plane, etcd, workers, and storage](cluster-architecture.png)
+
 ---
 
 ## Table of Contents
