@@ -8,7 +8,7 @@ flowchart LR
 
     subgraph RECOVERY["RECOVERY FLOW"]
         STOP["Stop kubelet<br/>mv etcd manifest"]
-        RESTORE["etcdctl snapshot restore<br/>--data-dir=/var/lib/etcd-restored"]
+        RESTORE["etcdutl snapshot restore<br/>--data-dir=/var/lib/etcd-restored<br/><small>(etcdctl restore is retired)</small>"]
         SWAP["Swap data dirs<br/>mv etcd.old → etcd-restored"]
         START["Restart etcd<br/>Restore manifest<br/>Start kubelet"]
     end

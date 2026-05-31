@@ -289,6 +289,9 @@ etcdctl defrag
 
 Never rely on filesystem-level backups of etcd's data directory. Always use `etcdctl snapshot save`.
 
+> **Note on tools:** `etcdctl` handles live operations (save, status, member management).  
+> `etcdutl` handles offline operations — specifically `snapshot restore`. The old `etcdctl snapshot restore` is retired.
+
 ```bash
 # Daily snapshot
 etcdctl snapshot save /backup/etcd-$(date +%Y%m%d).db
@@ -307,8 +310,8 @@ systemctl stop kubelet
 # If static pod:
 mv /etc/kubernetes/manifests/etcd.yaml /etc/kubernetes/
 
-# Restore from snapshot
-etcdctl snapshot restore /backup/etcd-20260531.db \
+# Restore from snapshot (etcdutl, not etcdctl — etcdctl snapshot restore is retired)
+etcdutl snapshot restore /backup/etcd-20260531.db \
   --data-dir=/var/lib/etcd-restored \
   --initial-cluster=etcd-0=https://10.0.0.1:2380 \
   --initial-advertise-peer-urls=https://10.0.0.1:2380 \
@@ -325,7 +328,7 @@ systemctl start kubelet
 
 ### Key Recovery Facts
 
-- `etcdctl snapshot restore` creates a **new cluster** from the snapshot — the member IDs and cluster ID change
+- `etcdutl snapshot restore` creates a **new cluster** from the snapshot — the member IDs and cluster ID change (`etcdctl snapshot restore` is retired)
 - You restore one snapshot per etcd member, but they must all restore from the same snapshot
 - On a multi-member cluster, you effectively rebuild the cluster from the snapshot
 - There is no "incremental" restore — it's snapshot or nothing
@@ -553,8 +556,9 @@ A single Secret larger than 1 MB is a misfit for etcd. Store large configs in ex
 │  ─────────────────────                                           │
 │  etcdctl snapshot save /path/backup-$(date +%Y%m%d).db          │
 │  etcdctl snapshot status /path/backup.db -w table                │
-│  etcdctl snapshot restore /path/backup.db \                     │
+│  etcdutl snapshot restore /path/backup.db \                     │
 │    --data-dir=/var/lib/etcd-restored --name=etcd-0               │
+│  # ^ etcdctl snapshot restore is retired — use etcdutl instead   │
 │                                                                  │
 │  🧹 Compaction & Defrag                                          │
 │  ──────────────────────────                                       │
