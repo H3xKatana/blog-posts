@@ -1,0 +1,29 @@
+flowchart TB
+    subgraph BEFORE["BEFORE — DB is bloated"]
+        B1["<b>etcd DB file: 4 GB</b>"]
+        B2["Live data: 500 MB<br/>Stale revisions: 3.5 GB"]
+    end
+
+    subgraph COMPACT["AFTER COMPACTION — revisions removed"]
+        C1["<b>etcd DB file: 4 GB</b>"]
+        C2["Live data: 500 MB<br/>Internal free space: 3.5 GB"]
+        C3["File size unchanged!<br/>Space is marked free<br/>inside the file"]
+    end
+
+    subgraph DEFRAG["AFTER DEFRAG — space reclaimed"]
+        D1["<b>etcd DB file: 500 MB</b>"]
+        D2["Live data: 500 MB<br/>Free space: 0"]
+        D3["File shrunk!<br/>Disk usage reduced"]
+    end
+
+    B1 -->|"etcctl compact <rev>"| C1
+    C1 -->|"etcdctl defrag"| D1
+
+    style B1 fill:#ffcdd2,stroke:#ef4444,color:#1e1e1e
+    style B2 fill:#ffcdd2,stroke:#ef4444,color:#1e1e1e
+    style C1 fill:#fff3bf,stroke:#f59e0b,color:#1e1e1e
+    style C2 fill:#fff3bf,stroke:#f59e0b,color:#1e1e1e
+    style C3 fill:#fff3bf,stroke:#f59e0b,color:#1e1e1e
+    style D1 fill:#c8e6c9,stroke:#2e7d32,color:#1e1e1e
+    style D2 fill:#c8e6c9,stroke:#2e7d32,color:#1e1e1e
+    style D3 fill:#c8e6c9,stroke:#2e7d32,color:#1e1e1e

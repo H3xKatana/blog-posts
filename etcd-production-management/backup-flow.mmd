@@ -1,0 +1,32 @@
+flowchart LR
+    subgraph DAILY["DAILY BACKUP (CronJob @ 2 AM)"]
+        SNAP["etcdctl snapshot save<br/>etcd-$(date +%Y%m%d).db"]
+        VERIFY["etcdctl snapshot status<br/>check hash + revision"]
+        STORE["Store to /var/backups/etcd/<br/>or S3/GCS/object storage"]
+        RETENTION["Retention: 30 days<br/>then auto-purge"]
+    end
+
+    subgraph RECOVERY["RECOVERY FLOW"]
+        STOP["Stop kubelet<br/>mv etcd manifest"]
+        RESTORE["etcdctl snapshot restore<br/>--data-dir=/var/lib/etcd-restored"]
+        SWAP["Swap data dirs<br/>mv etcd.old → etcd-restored"]
+        START["Restart etcd<br/>Restore manifest<br/>Start kubelet"]
+    end
+
+    SNAP --> VERIFY
+    VERIFY --> STORE
+    STORE --> RETENTION
+
+    STORE -.->|"when disaster strikes"| STOP
+    STOP --> RESTORE
+    RESTORE --> SWAP
+    SWAP --> START
+
+    style SNAP fill:#e3f2fd,stroke:#1565c0,color:#1e1e1e
+    style VERIFY fill:#e3f2fd,stroke:#1565c0,color:#1e1e1e
+    style STORE fill:#c8e6c9,stroke:#2e7d32,color:#1e1e1e
+    style RETENTION fill:#c8e6c9,stroke:#2e7d32,color:#1e1e1e
+    style STOP fill:#ffcdd2,stroke:#ef4444,color:#1e1e1e
+    style RESTORE fill:#fff3bf,stroke:#f59e0b,color:#1e1e1e
+    style SWAP fill:#fff3bf,stroke:#f59e0b,color:#1e1e1e
+    style START fill:#c8e6c9,stroke:#2e7d32,color:#1e1e1e

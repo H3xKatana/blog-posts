@@ -30,6 +30,8 @@ etcd is the source of truth for your Kubernetes cluster. Every `kubectl apply`, 
 
 This is the single most important thing to internalize about etcd in Kubernetes: **disk latency directly drives API latency.** A 10ms write latency on your etcd disk translates to visible slowdowns in `kubectl` commands, pod scheduling delays, and controller loops timing out.
 
+![etcd Architecture — API Server to Raft cluster to disk](etcd-architecture.png)
+
 ---
 
 ## What etcd Stores
@@ -205,6 +207,8 @@ histogram_quantile(0.99,
 ) > 0.05
 ```
 
+![Performance Chain — how disk latency cascades to user experience](perf-chain.png)
+
 ---
 
 ## DB Bloat, Compaction, and Defrag
@@ -275,6 +279,8 @@ etcdctl defrag
 
 > **etcd has a hard limit of 8 GB by default** (`--quota-backend-bytes=8589934592`). If your DB crosses this, etcd enters maintenance mode and stops accepting writes. You get `NOSPACE` and nothing works.
 
+![Compaction vs Defrag — why you need both to reclaim space](compact-defrag.png)
+
 ---
 
 ## Backup & Recovery
@@ -323,6 +329,8 @@ systemctl start kubelet
 - You restore one snapshot per etcd member, but they must all restore from the same snapshot
 - On a multi-member cluster, you effectively rebuild the cluster from the snapshot
 - There is no "incremental" restore — it's snapshot or nothing
+
+![Backup & Recovery Flow — daily snapshot pipeline and disaster recovery sequence](backup-flow.png)
 
 ---
 

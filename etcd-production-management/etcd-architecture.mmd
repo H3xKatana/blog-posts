@@ -1,0 +1,37 @@
+flowchart TB
+    subgraph User[" "]
+        KB["kubectl / k8s API clients"]
+    end
+
+    subgraph CP["CONTROL PLANE"]
+        APISERVER["kube-apiserver"]
+    end
+
+    subgraph ETCD["ETCD CLUSTER (Raft)"]
+        direction TB
+        L["etcd Leader<br/><small>writes accepted</small>"]
+        F1["etcd Follower"]
+        F2["etcd Follower"]
+
+        L <--> F1
+        L <--> F2
+        F1 <--> F2
+    end
+
+    subgraph DISK["DATA LAYER"]
+        DL1["<b>/var/lib/etcd/member</b><br/>wal + backend.db"]
+        DL2["SSD / NVMe<br/>Dedicated disk"]
+    end
+
+    KB -->|"kubectl apply/get/delete"| APISERVER
+    APISERVER -->|"gRPC watch/list/put"| L
+    L -->|"fsync"| DL1
+    DL1 --> DL2
+
+    style KB fill:#e3f2fd,stroke:#1565c0,color:#1e1e1e
+    style APISERVER fill:#e3f2fd,stroke:#1565c0,color:#1e1e1e
+    style L fill:#fff3bf,stroke:#f59e0b,color:#1e1e1e
+    style F1 fill:#e3f2fd,stroke:#1565c0,color:#1e1e1e
+    style F2 fill:#e3f2fd,stroke:#1565c0,color:#1e1e1e
+    style DL1 fill:#c8e6c9,stroke:#2e7d32,color:#1e1e1e
+    style DL2 fill:#c8e6c9,stroke:#2e7d32,color:#1e1e1e

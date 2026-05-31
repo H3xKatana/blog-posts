@@ -1,0 +1,22 @@
+flowchart LR
+    DISK["<b>Disk I/O</b><br/>fsync latency"] -->|"p99 > 25ms ⚠️"| COMMIT["<b>Commit Latency</b><br/>raft-log commit"]
+    COMMIT -->|"p99 > 50ms ⚠️"| RAFT["<b>Raft Consensus</b><br/>leader replication"]
+    RAFT -->|"p99 > 100ms 🔴"| API["<b>API Server</b><br/>request latency"]
+    API -->|"user feels it"| UX["<b>Everything Slow</b><br/>kubectl hangs,<br/>scheduling delays,<br/>controller timeouts"]
+
+    subgraph METRICS["Key PromQL"]
+        M1["histogram_quantile(0.99, rate(<br/>etcd_disk_backend_commit_duration_seconds_bucket[5m])) > 0.1"]
+        M2["histogram_quantile(0.99, rate(<br/>etcd_disk_wal_fsync_duration_seconds_bucket[5m])) > 0.05"]
+    end
+
+    DISK -.-> M1
+    COMMIT -.-> M2
+
+    style DISK fill:#ffcdd2,stroke:#ef4444,color:#1e1e1e
+    style COMMIT fill:#ffcdd2,stroke:#ef4444,color:#1e1e1e
+    style RAFT fill:#ffcdd2,stroke:#ef4444,color:#1e1e1e
+    style API fill:#ffe0b2,stroke:#f59e0b,color:#1e1e1e
+    style UX fill:#ffe0b2,stroke:#f59e0b,color:#1e1e1e
+    style METRICS fill:#e8f5e9,stroke:#2e7d32,color:#1e1e1e
+    style M1 fill:#e8f5e9,stroke:#2e7d32,color:#1e1e1e
+    style M2 fill:#e8f5e9,stroke:#2e7d32,color:#1e1e1e
