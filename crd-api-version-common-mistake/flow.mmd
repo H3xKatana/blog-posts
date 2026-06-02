@@ -1,0 +1,53 @@
+flowchart TB
+    subgraph CRD["CRD Definition"]
+        direction TB
+        A["apiVersion: apiextensions.k8s.io/v1<br/>kind: CustomResourceDefinition"]
+        B["metadata.name:<br/>backups.kubedojo.io"]
+        C["spec.group: kubedojo.io"]
+        D["spec.names.plural: backups<br/>spec.names.singular: backup<br/>spec.names.kind: Backup"]
+        E["spec.versions[0].name: v1"]
+    end
+
+    subgraph RESOURCE["How Kubernetes Resolves the API Version"]
+        F["apiVersion = group/version"]
+        G["Correct:&nbsp;<b>kubedojo.io/v1</b>&nbsp;✅"]
+        H["Wrong:&nbsp;<b>backups.kubedojo.io/v1</b>&nbsp;❌"]
+    end
+
+    subgraph ERROR["What Happens"]
+        I["kubectl apply -f backup.yml"]
+        J["Kubernetes looks for a resource<br/>matching kind 'Backup' in<br/>apiVersion 'backups.kubedojo.io/v1'"]
+        K["No CRD registered with<br/>group <b>'backups.kubedojo.io'</b>"]
+        L["❌ <b>error: no matches for kind<br/>'Backup' in version<br/>'backups.kubedojo.io/v1'</b>"]
+    end
+
+    subgraph FIX["The Fix"]
+        M["Change apiVersion to the<br/>correct group + version"]
+        N["apiVersion: <b>kubedojo.io/v1</b><br/>kind: Backup<br/>metadata:<br/>&nbsp;&nbsp;name: daily-backup<br/>spec:<br/>&nbsp;&nbsp;schedule: '*/5 * * * *'<br/>&nbsp;&nbsp;retention: 30"]
+        O["kubectl apply -f backup.yml ✅"]
+    end
+
+    C -->|"group is just 'kubedojo.io'"| F
+    F -->|"not 'backups.kubedojo.io'"| G
+    F -->|"common mistake: using plural name"| H
+    H --> I
+    I --> J
+    J --> K
+    K --> L
+    G --> M
+    M --> N
+    N --> O
+
+    style A fill:#e3f2fd,stroke:#1565c0,color:#1e1e1e
+    style B fill:#e3f2fd,stroke:#1565c0,color:#1e1e1e
+    style C fill:#c8e6c9,stroke:#2e7d32,color:#1e1e1e
+    style D fill:#e3f2fd,stroke:#1565c0,color:#1e1e1e
+    style E fill:#e3f2fd,stroke:#1565c0,color:#1e1e1e
+    style G fill:#c8e6c9,stroke:#2e7d32,color:#1e1e1e
+    style H fill:#ffcdd2,stroke:#ef4444,color:#1e1e1e
+    style L fill:#ffcdd2,stroke:#ef4444,color:#1e1e1e
+    style N fill:#c8e6c9,stroke:#2e7d32,color:#1e1e1e
+    style O fill:#c8e6c9,stroke:#2e7d32,color:#1e1e1e
+    style I fill:#fff3bf,stroke:#f59e0b,color:#1e1e1e
+    style J fill:#fff3bf,stroke:#f59e0b,color:#1e1e1e
+    style K fill:#fff3bf,stroke:#f59e0b,color:#1e1e1e
