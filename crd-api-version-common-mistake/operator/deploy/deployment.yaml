@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backup-operator
+  namespace: default
+  labels:
+    app: backup-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backup-operator
+  template:
+    metadata:
+      labels:
+        app: backup-operator
+    spec:
+      serviceAccountName: backup-operator
+      containers:
+      - name: operator
+        image: python:3.13-slim
+        command: ["python3", "/operator/simple-backup-operator.py"]
+        env:
+        - name: WATCH_NAMESPACE
+          value: "default"
+        - name: IN_CLUSTER
+          value: "true"
+        - name: API_BASE
+          value: "http://localhost:8001"
+        volumeMounts:
+        - name: script
+          mountPath: /operator
+      - name: kubectl-proxy
+        image: bitnami/kubectl:latest
+        command:
+        - kubectl
+        - proxy
+        - --port=8001
+        - --accept-hosts=.*
+        ports:
+        - containerPort: 8001
+          name: api-proxy
+      volumes:
+      - name: script
+        configMap:
+          name: backup-operator-script
+          defaultMode: 0755

@@ -1,0 +1,22 @@
+# Operator Deployment
+#
+# Deploy the operator to your cluster:
+#   kubectl apply -k deploy/
+#
+# Or step by step:
+#   kubectl apply -f deploy/rbac.yaml
+#   kubectl apply -f deploy/configmap.yaml
+#   kubectl apply -f deploy/deployment.yaml
+#
+# Then test with a sample Backup:
+#   kubectl apply -f sample-backup.yaml
+#   kubectl get backups.kubedojo.io
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: default
+
+resources:
+- rbac.yaml
+- configmap.yaml
+- deployment.yaml

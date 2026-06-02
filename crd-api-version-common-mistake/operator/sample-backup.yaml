@@ -1,0 +1,8 @@
+apiVersion: kubedojo.io/v1
+kind: Backup
+metadata:
+  name: demo-backup
+spec:
+  schedule: "0 3 * * *"
+  target: "postgres"
+  retention: 14

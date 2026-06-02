@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backup-operator-script
+  namespace: default
+data:
+  simple-backup-operator.py: |
+    #!/usr/bin/env python3
+    """
+    simple-backup-operator.py — A minimal Kubernetes operator for Backup CRDs.
+    """
+    import os, sys, json, time, logging, subprocess
+    from datetime import datetime, timezone
+
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+    log = logging.getLogger("backup-operator")
+
+    NAMESPACE = os.environ.get("WATCH_NAMESPACE", "default")
+    GROUP = "kubedojo.io"
+    VERSION = "v1"
+    PLURAL = "backups"
+    API_BASE = os.environ.get("API_BASE", "http://localhost:8001")
+    API_URL = f"{API_BASE}/apis/{GROUP}/{VERSION}/namespaces/{NAMESPACE}/{PLURAL}"
+    RESOURCE_VERSION = "0"
+
+    def kube_api(method, url, body=None):
+        cmd = ["curl", "-s", "-X", method, url]
+        if body:
+            cmd += ["-H", "Content-Type: application/json", "-d", json.dumps(body)]
+        try:
+            r = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+            return json.loads(r.stdout) if r.returncode == 0 else None
+        except: return None
+
+    def list_backups():
+        data = kube_api("GET", API_URL)
+        return data.get("items", []) if data else []
+
+    def watch_backups():
+        global RESOURCE_VERSION
+        watch_url = f"{API_URL}?watch=1&allowWatchBookmarks=true&resourceVersion={RESOURCE_VERSION}"
+        try:
+            r = subprocess.run(["curl", "-s", "-N", watch_url], capture_output=True, text=True, timeout=290)
+            for line in r.stdout.strip().split("\n"):
+                line = line.strip()
+                if line:
+                    try: yield json.loads(line)
+                    except: pass
+        except subprocess.TimeoutExpired:
+            pass
+
+    def reconcile(backup):
+        meta, spec = backup.get("metadata", {}), backup.get("spec", {})
+        name = meta.get("name", "?")
+        target, retention = spec.get("target", ""), spec.get("retention", 7)
+        log.info("=== Reconciling Backup: %s ===", name)
+        log.info("  Target: %s  |  Retention: %d days", target, retention)
+        if target:
+            ts = datetime.now(timezone.utc).isoformat()
+            log.info("  [ACTION] Backing up '%s' at %s", target, ts)
+            time.sleep(1)
+            log.info("  [OK] Backup '%s' completed ✅", name)
+        else:
+            log.warning("  [SKIP] No target specified")
+
+    def watch_loop():
+        global RESOURCE_VERSION
+        log.info("Operator starting — watching %s/%s", GROUP, PLURAL)
+        for b in list_backups():
+            reconcile(b)
+            rv = b.get("metadata", {}).get("resourceVersion", "0")
+            if rv > RESOURCE_VERSION: RESOURCE_VERSION = rv
+        log.info("Watching for events...")
+        while True:
+            try:
+                for ev in watch_backups():
+                    obj = ev.get("object", {})
+                    rv = obj.get("metadata", {}).get("resourceVersion", "0")
+                    if rv > RESOURCE_VERSION: RESOURCE_VERSION = rv
+                    name = obj.get("metadata", {}).get("name", "?")
+                    log.info("Event: %s — %s", ev.get("type"), name)
+                    if ev.get("type") in ("ADDED", "MODIFIED"):
+                        reconcile(obj)
+            except Exception as e:
+                log.error("Watch error: %s — reconnecting", e)
+                time.sleep(5)
+
+    if __name__ == "__main__":
+        log.info("=" * 40)
+        log.info("  Simple Backup Operator v1")
+        log.info("=" * 40)
+        if os.environ.get("IN_CLUSTER", "").lower() not in ("true", "1", "yes"):
+            subprocess.Popen(["kubectl", "proxy", "--port=8001"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            time.sleep(3)
+        watch_loop()
