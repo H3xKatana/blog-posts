@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Author card — Kara Mohamed Mourtadha</title>
+<style>
+  :root{
+    --ink:#111417; --muted:#5c6672; --line:#dfe4ea; --paper:#fbfbfa; --accent:#1f6f5c;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; display:grid; place-items:center; padding:32px;
+    background:var(--paper); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .card{
+    width:100%; max-width:640px; background:#fff; border:1px solid var(--line);
+    border-radius:14px; padding:34px 36px 30px; position:relative;
+  }
+  .card::before{
+    content:""; position:absolute; left:0; top:26px; bottom:26px; width:3px;
+    background:var(--accent); border-radius:0 2px 2px 0;
+  }
+  .name{margin:0; font-size:27px; letter-spacing:-.4px; font-weight:650}
+  .role{margin:6px 0 0; font-size:14px; color:var(--accent); font-weight:600; letter-spacing:.02em}
+  .line{margin:18px 0 0; font-size:16.5px; line-height:1.55; max-width:52ch}
+  .facts{
+    margin:22px 0 0; padding:18px 0 0; border-top:1px solid var(--line);
+    display:grid; grid-template-columns:1fr 1fr; gap:12px 26px; list-style:none;
+  }
+  .facts li{font-size:13.5px; line-height:1.45; color:var(--muted)}
+  .facts b{display:block; color:var(--ink); font-weight:600; font-size:12px;
+           text-transform:uppercase; letter-spacing:.07em; margin-bottom:2px}
+  .links{margin:20px 0 0; font-size:13px; color:var(--muted)}
+  .links a{color:var(--ink); text-decoration:none; border-bottom:1px solid var(--line)}
+  .links a:hover{border-color:var(--accent)}
+  .dot{margin:0 8px; color:var(--line)}
+  @media (max-width:520px){ .facts{grid-template-columns:1fr} .card{padding:26px 22px} }
+  @media print{ body{background:#fff;padding:0} .card{border:0;padding:0} }
+</style>
+</head>
+<body>
+  <article class="card">
+    <h1 class="name">Kara Mohamed Mourtadha</h1>
+    <p class="role">SRE · DFIR · Platform engineer</p>
+
+    <p class="line">
+      I keep production infrastructure from falling over, and I write down what actually happened
+      when it does. Most of my work is finding the gap between what a system reports and what it
+      is doing.
+    </p>
+
+    <ul class="facts">
+      <li><b>Focus</b>Linux, Kubernetes, CI/CD, on-call incident response</li>
+      <li><b>Stack</b>AWS, GCP, OCI, DigitalOcean, Terraform, ArgoCD, Traefik</li>
+      <li><b>Certified</b>CKA, KCNA, OCI DevOps Pro, CyberDefenders SOC</li>
+      <li><b>Background</b>Threat hunting, memory forensics, detection engineering</li>
+    </ul>
+
+    <p class="links">
+      <a href="https://github.com/H3xKatana">github.com/H3xKatana</a>
+      <span class="dot">·</span>
+      <a href="https://www.linkedin.com/in/kara-mohamed-mourtadha">linkedin.com/in/kara-mohamed-mourtadha</a>
+    </p>
+  </article>
+</body>
+</html>

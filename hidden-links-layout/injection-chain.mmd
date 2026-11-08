@@ -1,0 +1,10 @@
+flowchart LR
+  A["footer layout<br/>one script tag"] --> B["rendered HTML<br/>on every page"]
+  B --> C["external loader<br/>/api/site.js"]
+  C --> D["insertAdjacentHTML<br/>before the script"]
+  D --> E["50 anchors<br/>0x0 px, overflow hidden"]
+  E --> F["crawler indexes<br/>dofollow links"]
+  E --> G["visitor sees<br/>nothing"]
+  style A fill:#fff,stroke:#1f6f5c,color:#111
+  style E fill:#fff,stroke:#b45309,color:#111
+  style F fill:#fff,stroke:#b45309,color:#111
